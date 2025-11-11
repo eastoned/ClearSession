@@ -1,0 +1,51 @@
+{
+  "edges": [
+    {
+      "key": "cbe075a8-2417-4e39-9972-af1374c88eae",
+      "source": "7a8aa343-06c6-4e12-9b21-56650f831437",
+      "target": "f8e86d54-84b7-4d71-9839-0607c2a481d6"
+    }
+  ],
+  "nodes": [
+    {
+      "key": "7a8aa343-06c6-4e12-9b21-56650f831437",
+      "attributes": {
+        "id": "7a8aa343-06c6-4e12-9b21-56650f831437",
+        "content": {
+          "date": null,
+          "cycle": null,
+          "notes": null
+        },
+        "position": {
+          "x": 102.11612115663388,
+          "y": -175.34916395538937
+        },
+        "symbolId": "1e2d1a3b-fe20-4357-a22a-56f468f46a7b",
+        "categoryId": "bcc4bef7-2ab7-4fe6-8c14-706ba6bdc5ec"
+      }
+    },
+    {
+      "key": "f8e86d54-84b7-4d71-9839-0607c2a481d6",
+      "attributes": {
+        "id": "f8e86d54-84b7-4d71-9839-0607c2a481d6",
+        "content": {
+          "date": null,
+          "cycle": null,
+          "notes": null
+        },
+        "position": {
+          "x": 521.804455634394,
+          "y": -155.05225031105903
+        },
+        "symbolId": "6d791b2d-16b7-4860-8b4d-2b244a697659",
+        "categoryId": "bcc4bef7-2ab7-4fe6-8c14-706ba6bdc5ec"
+      }
+    }
+  ],
+  "options": {
+    "type": "directed",
+    "multi": false,
+    "allowSelfLoops": false
+  },
+  "attributes": {}
+}

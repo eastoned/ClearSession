@@ -1,0 +1,18 @@
+{
+    "scripts": {
+        "dev": "vite --host 127.0.0.1"
+    },
+    "dependencies": {
+        "camera-controls": "^3.1.0",
+        "csv-parse": "^6.1.0",
+        "file-system": "^2.2.2",
+        "jeasings": "^0.0.16",
+        "meshline": "^3.3.1",
+        "papaparse": "^5.5.3",
+        "three": "^0.155.0",
+        "three-hex-tiling": "^0.1.5",
+        "three.interactive": "^1.8.0",
+        "troika-three-text": "^0.52.4",
+        "vite": "^7.1.2"
+    }
+}
