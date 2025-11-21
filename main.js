@@ -77,7 +77,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 }
 
 const grass_tex = new THREE.TextureLoader().load(
-    "./textures/grass.jpg"
+    "textures/grass.jpg"
 );
 
 grass_tex.wrapS = THREE.RepeatWrapping;
