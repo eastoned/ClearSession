@@ -48,7 +48,7 @@ function loadScene() {
     grass_tex.repeat.set(800, 800);
 
     const road_tex = new THREE.TextureLoader().load(
-        "./textures/asphalt.jpg"
+        "textures/asphalt.jpg"
     );
 
     const scene = new THREE.Scene();
@@ -62,7 +62,7 @@ function loadScene() {
 function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 {
 
-    loader.load('/models/' + modelName + '.glb', function(gltf) {
+    loader.load('models/' + modelName + '.glb', function(gltf) {
     const modelOriginal = gltf.scene;
     
     modelOriginal.scale.set(scale, scale, scale);
@@ -593,7 +593,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     }
 
     //only draw timeline if we can retrieve the csv data
-    Papa.parse('./data/ID_Data.csv', {
+    Papa.parse('data/iconData.csv', {
     header: true,
     download: true,
     dynamicTyping: true,
