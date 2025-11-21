@@ -324,6 +324,18 @@ const distanceWhiteMaterial = new THREE.ShaderMaterial({
     blending: THREE.NormalBlending
 });
 
+const distanceGreyMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    nearColor: { value: new THREE.Color(0xaaaaaa) },
+    maxDistance: { value: 10.0 }
+  },
+  vertexShader: worldPositionVertexShader(),
+  fragmentShader: distanceAlphaFragmentShader(),
+    transparent: true, // allow alpha blending
+    depthWrite: false, // prevents depth buffer from overwriting transparent pixels
+    blending: THREE.NormalBlending
+});
+
 function loadSign(key){
     let name = dataID.find(item => item.id === key);
     let date = obj.nodes.find(item => item.key === key);
@@ -341,14 +353,14 @@ function loadSign(key){
     const signMat = new THREE.MeshToonMaterial({color:0x01735C});
     const white = new THREE.MeshToonMaterial({color:0xffffff});
 
-    drawSign(2, 0, 0-1, 50, 14, distanceSignMaterial, signGroup, 1.5, -.1);
-    drawSign(2, 1, 1-1, 48, 12, distanceWhiteMaterial, signGroup, 1.5, 0);
-    drawSign(2, 1.5, 1.5-1, 47, 11, distanceSignMaterial, signGroup, 1.5, 0.1);
+    drawSign(2, 0, 0-1, 50, 14, distanceSignMaterial, signGroup, 1, -.1);
+    drawSign(2, 1, 1-1, 48, 12, distanceWhiteMaterial, signGroup, 2, 0);
+    drawSign(2, 1.5, 1.5-1, 47, 11, distanceSignMaterial, signGroup, 2, 0.1);
 
     //draw sign legs
     const legMat = new THREE.MeshToonMaterial({color:0xaaaaaa});
-    drawQuad(8, -15, 2, 14, distanceWhiteMaterial, signGroup, -0.2);
-    drawQuad(43, -15, 2, 14, distanceWhiteMaterial, signGroup, -0.2);
+    drawQuad(8, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
+    drawQuad(43, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
     
     signGroup.name = "Sign" + name.nameEn;
 
@@ -427,6 +439,25 @@ function drawRoad(start, end, sourceCount, childCount){
 
         //top left
         shape.lineTo(nodePos[end].y-12, nodePos[end].x);
+
+        const centerStripe = new THREE.Shape();
+
+        centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
+        //bottom right
+        centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
+        //top right
+        centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
+        //top left
+        centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
+        const yellow = new THREE.MeshToonMaterial({color:0xffff00});
+
+        const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
+        const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
+        centerStripeMesh.position.z = 0.65;
+
+        scene.add(centerStripeMesh);
+
+
     }else{
         //bottom left
         shape.moveTo(nodePos[start].y-12 + sourceCount*24 - 36, nodePos[start].x+15);
@@ -442,11 +473,13 @@ function drawRoad(start, end, sourceCount, childCount){
 
         const fillerShape = new THREE.Shape();
 
-        //bottom left
         fillerShape.moveTo(nodePos[start].y-12 + sourceCount*24 - 36, nodePos[start].x+15);
 
-        //bottom right
+        //fillerShape.lineTo(nodePos[start].y, nodePos[start].x + 20);
+
         fillerShape.lineTo(nodePos[start].y+12 + sourceCount*24 - 36, nodePos[start].x+15);
+
+        //fillerShape.lineTo(nodePos[start].y, nodePos[start].x+15);
 
         //bottom left
         fillerShape.moveTo(nodePos[start].y + 6 + sourceCount * 12 - 18, nodePos[start].x);
@@ -460,6 +493,25 @@ function drawRoad(start, end, sourceCount, childCount){
         fillerMesh.position.z = 0.5;
 
         scene.add(fillerMesh);
+
+        const centerStripe = new THREE.Shape();
+
+        centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
+        //bottom right
+        centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
+        centerStripe.lineTo(nodePos[start].y+0.5 + (nodePos[end].y-0.5)/2, nodePos[start].x+15);
+        //top right
+        centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
+        //top left
+        centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
+        centerStripe.lineTo(nodePos[start].y-0.5 + (nodePos[end].y-0.5)/2, nodePos[start].x+15);
+        const yellow = new THREE.MeshToonMaterial({color:0xffff00});
+
+        const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
+        const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
+        centerStripeMesh.position.z = 0.65;
+
+        scene.add(centerStripeMesh);
     }
 
     const lineGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
@@ -519,7 +571,7 @@ function drawTimeline() {
         if(key in modelPaths)
         {
             //draws all models to scene
-            loadModel(modelPaths[key], nodePos[key].y - 20, nodePos[key].x-2, 6, false, 3);
+            loadModel(modelPaths[key], nodePos[key].y, nodePos[key].x, 6, false, 3);
             
         }
 
@@ -550,7 +602,7 @@ Papa.parse('/data/ID_Data.csv', {
 var toggled = false;
 
 function moveCam(xPos, yPos, zPos, offsetX = 0, offsetY = 0, offsetZ = 70) {
-    cameraControls.setLookAt(xPos + offsetX, yPos + offsetY, zPos+offsetZ, xPos, yPos, 0, true);
+    cameraControls.setLookAt(xPos + offsetX, yPos + offsetY+15, zPos+offsetZ + 5, xPos, yPos, 0, true);
     //camera.layers.enable(5);
     lineMat.linewidth = 10;
     toggled = true;
@@ -644,7 +696,7 @@ function toggleCameraControls() {
         cameraControls.mouseButtons.wheel = CameraControls.ACTION.NONE;
     }else{
         cameraControls.mouseButtons.left = CameraControls.ACTION.ROTATE;
-        cameraControls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
+        cameraControls.mouseButtons.middle = CameraControls.ACTION.TRUCK;
         cameraControls.mouseButtons.right = CameraControls.ACTION.TRUCK;
         cameraControls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
     }
