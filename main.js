@@ -77,7 +77,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 }
 
 const grass_tex = new THREE.TextureLoader().load(
-    "textures/grass.jpg"
+    "./textures/grass.jpg"
 );
 
 grass_tex.wrapS = THREE.RepeatWrapping;
@@ -86,7 +86,7 @@ grass_tex.wrapT = THREE.RepeatWrapping;
 grass_tex.repeat.set(800, 800);
 
 const road_tex = new THREE.TextureLoader().load(
-    "textures/asphalt.jpg"
+    "./textures/asphalt.jpg"
 );
 
 const scene = new THREE.Scene();
@@ -116,7 +116,7 @@ const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: tr
 var dataID; //gets icon information from csv file
 let modelPaths = {};
 
-import data from '/data/data3.json' with { type: 'json' };
+import data from './data/data3.json' with { type: 'json' };
 
 const obj = data;
 cameraControls.setLookAt(0, 0, 250, 0, 0, 0);
@@ -583,7 +583,7 @@ function drawTimeline() {
 }
 
 //only draw timeline if we can retrieve the csv data
-Papa.parse('/data/ID_Data.csv', {
+Papa.parse('./data/ID_Data.csv', {
   header: true,
   download: true,
   dynamicTyping: true,
