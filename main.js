@@ -39,7 +39,7 @@ function loadScene() {
 
 
     const grass_tex = new THREE.TextureLoader().load(
-        "textures/grass.jpg"
+        "grass.jpg"
     );
 
     grass_tex.wrapS = THREE.RepeatWrapping;
@@ -48,7 +48,7 @@ function loadScene() {
     grass_tex.repeat.set(800, 800);
 
     const road_tex = new THREE.TextureLoader().load(
-        "textures/asphalt.jpg"
+        "asphalt.jpg"
     );
 
     const scene = new THREE.Scene();
