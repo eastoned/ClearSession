@@ -116,7 +116,7 @@ const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: tr
 var dataID; //gets icon information from csv file
 let modelPaths = {};
 
-import data from '/data/data3.json' assert { type: 'json' };
+import data from '/data/data3.json' with { type: 'json' };
 
 const obj = data;
 cameraControls.setLookAt(0, 0, 250, 0, 0, 0);
