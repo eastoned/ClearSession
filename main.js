@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import {MathUtils} from 'three';
 import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
 import JEASINGS, { JEasing, Linear } from 'jeasings';
+import { Line2 } from 'three/addons/lines/Line2.js';
+			import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+			import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import {Text} from 'troika-three-text';
 import {preloadFont} from 'troika-three-text'
 import { InteractionManager } from 'three.interactive';
@@ -128,6 +131,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
 
     const obj = data;
+    console.log(obj.attributes);
     cameraControls.setLookAt(0, 0, 250, 0, 0, 0);
 
     const groundMat = new THREE.MeshStandardMaterial({
@@ -280,6 +284,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         
         const quadMesh = new THREE.Mesh(quadGeo, mat);
         quadMesh.position.z = offset;
+        quadMesh.layers.set(5);
         group.add(quadMesh);
     }
 
@@ -303,7 +308,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         varying vec3 vWorldPosition;
 
         void main() {
-        float dist = distance(cameraPosition, vWorldPosition) - 35.0;
+        float dist = distance(cameraPosition, vWorldPosition) - 30.0;
         float t = clamp(dist / maxDistance, 0.0, 1.0);
         gl_FragColor = vec4(nearColor, t);
         }
@@ -363,14 +368,14 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         const signMat = new THREE.MeshToonMaterial({color:0x01735C});
         const white = new THREE.MeshToonMaterial({color:0xffffff});
 
-        drawSign(2, 0, 0-1, 50, 14, distanceSignMaterial, signGroup, 1, -.1);
-        drawSign(2, 1, 1-1, 48, 12, distanceWhiteMaterial, signGroup, 2, 0);
-        drawSign(2, 1.5, 1.5-1, 47, 11, distanceSignMaterial, signGroup, 2, 0.1);
+        drawSign(2, 0+6, -1-8, 50, 14, distanceSignMaterial, signGroup, 1, -.1);
+        drawSign(2, 1+6, 0-8, 48, 12, distanceWhiteMaterial, signGroup, 2, 0);
+        drawSign(2, 1.5+6, 0.5-8, 47, 11, distanceSignMaterial, signGroup, 2, 0.1);
 
         //draw sign legs
         const legMat = new THREE.MeshToonMaterial({color:0xaaaaaa});
-        drawQuad(8, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
-        drawQuad(43, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
+        drawQuad(14, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
+        drawQuad(49, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
         
         signGroup.name = "Sign" + name.nameEn;
 
@@ -385,8 +390,8 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         //myText.color = 0xFFFFFF;
         myText.anchorX = 'middle';
         myText.anchorY = 'middle';
-        myText.position.x = 3;
-        myText.position.y = 8;
+        myText.position.x = 9;
+        myText.position.y = 0;
         myText.rotation.z = Math.PI/180;
         myText.position.z = 1.2;
         signGroup.add(myText);
@@ -439,16 +444,16 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
         if(childCount < 2){
             //bottom left
-            shape.moveTo(nodePos[start].y-12, nodePos[start].x);
+            shape.moveTo(nodePos[start].y-12, nodePos[start].x-512);
 
             //bottom right
-            shape.lineTo(nodePos[start].y+12, nodePos[start].x);
+            shape.lineTo(nodePos[start].y+12, nodePos[start].x-512);
 
             //top right
-            shape.lineTo(nodePos[end].y+12, nodePos[end].x);
+            shape.lineTo(nodePos[end].y+12, nodePos[end].x + 12);
 
             //top left
-            shape.lineTo(nodePos[end].y-12, nodePos[end].x);
+            shape.lineTo(nodePos[end].y-12, nodePos[end].x + 12);
 
             const centerStripe = new THREE.Shape();
 
@@ -459,7 +464,21 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
             //top left
             centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
-            const yellow = new THREE.MeshToonMaterial({color:0xffff00});
+
+
+            const leftStripe = new THREE.Shape();
+
+            leftStripe.moveTo(nodePos[start].y+12, nodePos[start].x);
+            //bottom right
+            leftStripe.lineTo(nodePos[start].y+11, nodePos[start].x);
+            //top right
+            leftStripe.lineTo(nodePos[end].y+11, nodePos[end].x);
+            //top left
+            leftStripe.lineTo(nodePos[end].y+12, nodePos[end].x);
+
+            //const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: true, opacity: 0.3});
+            const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
+            const grey = new THREE.MeshBasicMaterial({color:0xbbbbbb, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending});
 
             const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
             const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
@@ -467,13 +486,20 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
             scene.add(centerStripeMesh);
 
+            const leftStripeGeo = new THREE.ExtrudeGeometry(leftStripe, extrudeSettings);
+            const leftStripeMesh = new THREE.Mesh(leftStripeGeo, grey);
+            leftStripeMesh.position.z = 0.6;
+
+            //scene.add(leftStripeMesh);
+
+
 
         }else{
             //bottom left
-            shape.moveTo(nodePos[start].y-12 + sourceCount*24 - 36, nodePos[start].x+15);
+            shape.moveTo(nodePos[end].y-12, nodePos[start].x+25);
 
             //bottom right
-            shape.lineTo(nodePos[start].y+12 + sourceCount*24 - 36, nodePos[start].x+15);
+            shape.lineTo(nodePos[end].y+12, nodePos[start].x+25);
 
             //top right
             shape.lineTo(nodePos[end].y+12, nodePos[end].x);
@@ -483,19 +509,21 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
             const fillerShape = new THREE.Shape();
 
-            fillerShape.moveTo(nodePos[start].y-12 + sourceCount*24 - 36, nodePos[start].x+15);
+            
+
+            fillerShape.moveTo(nodePos[end].y-12, nodePos[start].x+25);
 
             //fillerShape.lineTo(nodePos[start].y, nodePos[start].x + 20);
 
-            fillerShape.lineTo(nodePos[start].y+12 + sourceCount*24 - 36, nodePos[start].x+15);
+            fillerShape.lineTo(nodePos[end].y+12, nodePos[start].x+25);
 
             //fillerShape.lineTo(nodePos[start].y, nodePos[start].x+15);
 
             //bottom left
-            fillerShape.moveTo(nodePos[start].y + 6 + sourceCount * 12 - 18, nodePos[start].x);
+            fillerShape.moveTo(nodePos[start].y + 12, nodePos[start].x);
 
             //bottom right
-            fillerShape.lineTo(nodePos[start].y - 6 + sourceCount * 12 - 18, nodePos[start].x);
+            fillerShape.lineTo(nodePos[start].y - 12, nodePos[start].x);
 
             const fillerGeo = new THREE.ExtrudeGeometry(fillerShape, extrudeSettings);
             const fillMat = new THREE.MeshBasicMaterial({color:0xff0000});
@@ -509,13 +537,14 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
             //bottom right
             centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
-            centerStripe.lineTo(nodePos[start].y+0.5 + (nodePos[end].y-0.5)/2, nodePos[start].x+15);
+            centerStripe.lineTo(nodePos[end].y+0.5, nodePos[start].x+25);
             //top right
             centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
             //top left
             centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
-            centerStripe.lineTo(nodePos[start].y-0.5 + (nodePos[end].y-0.5)/2, nodePos[start].x+15);
-            const yellow = new THREE.MeshToonMaterial({color:0xffff00});
+            centerStripe.lineTo(nodePos[end].y-0.5, nodePos[start].x+25);
+            
+            const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
 
             const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
             const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
@@ -553,7 +582,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
                 if(!(dest in nodePos))  {
                     
-                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/5, 0);
+                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
                     sources[dest] = 0;
                 }
                 
@@ -563,7 +592,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
                 sources[src] += 1;
                 if(!(dest in nodePos))  {
 
-                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest)/4, sources[src]/childCount * 100 - 75);
+                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest)/2, sources[src]/childCount * 60 - 45);
                 }
                 
             }
@@ -581,7 +610,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             if(key in modelPaths)
             {
                 //draws all models to scene
-                loadModel(modelPaths[key], nodePos[key].y, nodePos[key].x, 6, false, 3);
+                loadModel(modelPaths[key], nodePos[key].y + 52, nodePos[key].x - 12, 6, false, 5);
                 
             }
 
@@ -612,69 +641,120 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     var toggled = false;
 
     function moveCam(xPos, yPos, zPos, offsetX = 0, offsetY = 0, offsetZ = 70) {
-        cameraControls.setLookAt(xPos + offsetX, yPos + offsetY+15, zPos+offsetZ + 5, xPos, yPos, 0, true);
-        //camera.layers.enable(5);
+        cameraControls.setLookAt(xPos + offsetX + 15, yPos + offsetY+5, zPos+offsetZ + 5, xPos + 15, yPos, 10, true);
         lineMat.linewidth = 10;
-        toggled = true;
-        //toggleCam();
-        rotateText();
-        //scene.fog = new THREE.Fog(color, 50, 200);
+        //toggled = true;
+        rotateText(true);
     }
 
     function toggleCam() {
         console.log("toggle");
 
         if(!toggled) {
+            console.log("enable layer");
                 //scene.fog = new THREE.Fog(color, 0, 10);
         }else{
             cameraControls.setLookAt(0, 0, 250, 0, 0, 0, true);
             camera.layers.disable(5);
             lineMat.linewidth = 2;
-            toggled = false;
-            rotateText();
+            //toggled = false;
+            rotateText(false);
                 //scene.fog = new THREE.Fog(color, near, far);
 
         }
     }
 
-    function rotateText(){
-        let counter = 0;
-        scene.children.forEach(object => {
-            
-            
-            if (object instanceof THREE.Object3D) {
-                //console.log(object.name);
-                //
-                if(toggled){
-                    //3d model would have scene name
-                    if(object.name == "Scene"){
-                        object.rotation.x = 90 * Math.PI/180;
-                        object.rotation.y = -135 * Math.PI/180;
-                        //object.rotation.z = 45 * Math.PI/180;
-                    }
-                }
-                else{
-                    if(object.name == "Scene"){
-                        object.rotation.x = 0 * Math.PI/180;
-                        object.rotation.y = 0 * Math.PI/180;
-                    }
-                    
-                }
-                
-            }
+    const points = [];
+	const colors = [];
 
-            if(object instanceof THREE.Group){
-                console.log(object.name);
-                if(object.name == "Scene") return;
-                if(toggled){
-                    object.rotation.x = 90 * Math.PI/180;
-                    object.scale.set(0.6,0.6,0.6);
-                }else{
-                    object.rotation.x = 0 * Math.PI/180;
-                    object.scale.set(1,1,1);
-                }
+    points.push( new THREE.Vector3( - 10, 0, 5 ) );
+    colors.push(new THREE.Color(1,1,1));
+    points.push( new THREE.Vector3( 0, 10, 5 ) );
+    colors.push(new THREE.Color(1,1,1));
+    points.push( new THREE.Vector3( 10, 0, 5 ) );
+    colors.push(new THREE.Color(1,1,1));
+
+    const geometry = new LineGeometry();
+	geometry.setPositions( points );
+	geometry.setColors( colors );
+
+    let matLine = new LineMaterial( {
+
+					color: 0xffffff,
+					linewidth: 15, // in world units with size attenuation, pixels otherwise
+					vertexColors: false,
+
+					dashed: true,
+					alphaToCoverage: true,
+
+				} );
+
+    let line = new Line2( geometry, matLine );
+    //const line = new THREE.Line( geometry, material );
+    scene.add( line );
+
+    function rotateText(zoomed){
+        let counter = 0;
+        if(toggled != zoomed){
+
+            if(zoomed) {
+                camera.layers.enable(5);
+            }else{
+                camera.layers.disable(5);
             }
-        });
+        
+            scene.children.forEach(object => {
+            
+                if (object instanceof THREE.Object3D) {
+                    if(!toggled){
+                        
+                        //3d model would have scene name
+                        if(object.name == "Scene"){
+                            object.rotation.x = 90 * Math.PI/180;
+                            object.rotation.y = 315 * Math.PI/180;
+                            //object.position.x += 5;
+                            object.position.x -= 24;
+                            object.scale.x = 3;
+                            object.scale.y = 3;
+                            object.scale.z = 3;
+                            //object.rotation.z = 45 * Math.PI/180;
+                        }
+                    }
+                    else{
+                        
+                        if(object.name == "Scene"){
+                            object.scale.x = 5;
+                            object.scale.y = 5;
+                            object.scale.z = 5;
+                            object.position.x += 24;
+                            //object.position.x -= 5;
+                            object.rotation.x = 0 * Math.PI/180;
+                            object.rotation.y = 0 * Math.PI/180;
+                        }
+                        
+                    }
+                
+                }
+
+                if(object instanceof THREE.Group){
+                    if(object.name == "Scene") return;
+                    if(!toggled){
+                        object.rotation.x = 90 * Math.PI/180;
+                        //object.position.x -= 5;
+                        object.position.y += 2;
+                        object.scale.set(0.6,0.6,0.6);
+                    }else{
+                        object.rotation.x = 0 * Math.PI/180;
+                        //object.position.x += 15;
+                        object.position.y -= 2;
+                        object.scale.set(1,1,1);
+                    }
+                }
+            });
+
+            toggled = zoomed;
+
+        }
     }
 
 
@@ -715,6 +795,20 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
     function animate() {
         requestAnimationFrame(animate);
+
+        if(toggled){
+            scene.children.forEach(object => {
+            
+                if (object instanceof THREE.Object3D) {
+                    if(object.name == "Scene"){
+                            let time = Date.now() * 0.001;
+                            object.rotation.y = -time * .25;
+                            //object.rotation.z = 45 * Math.PI/180;
+                        }
+                    }
+                    
+            });
+        }
 
         const delta = clock.getDelta();
         const hasControlsUpdated = cameraControls.update(delta);
