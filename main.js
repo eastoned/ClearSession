@@ -622,7 +622,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     }
 
     //only draw timeline if we can retrieve the csv data
-    Papa.parse('data/iconData.csv', {
+    Papa.parse('./data/iconData.csv', {
     header: true,
     download: true,
     dynamicTyping: true,
