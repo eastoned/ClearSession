@@ -13,9 +13,12 @@
         "three": "^0.155.0",
         "three-hex-tiling": "^0.1.5",
         "three.interactive": "^1.8.0",
-        "troika-three-text": "^0.52.4"
+        "troika-three-text": "^0.52.4",
+        "vue": "^3.5.25"
     },
     "devDependencies": {
+        "@rollup/plugin-dsv": "^3.0.5",
+        "@vitejs/plugin-vue": "^6.0.2",
         "vite": "^7.2.4"
     }
 }

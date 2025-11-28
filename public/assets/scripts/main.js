@@ -1,19 +1,20 @@
 import * as THREE from 'three';
-import {MathUtils} from 'three';
-import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
-import JEASINGS, { JEasing, Linear } from 'jeasings';
-import { Line2 } from 'three/addons/lines/Line2.js';
-			import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-			import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
-import {Text} from 'troika-three-text';
-import {preloadFont} from 'troika-three-text'
-import { InteractionManager } from 'three.interactive';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import CameraControls from 'camera-controls';
-import Papa from 'papaparse';
-import 'three-hex-tiling';
-import { UVsDebug } from 'three/addons/utils/UVsDebug.js';
-import data from './data/data3.json' with { type: 'json' };
+import {MathUtils} from './three';
+import { MeshLineGeometry, MeshLineMaterial, raycast } from './meshline';
+import JEASINGS, { JEasing, Linear } from './jeasings';
+import { Line2 } from './three/addons/lines/Line2.js';
+import { LineMaterial } from './three/addons/lines/LineMaterial.js';
+import { LineGeometry } from './three/addons/lines/LineGeometry.js';
+import {Text} from './troika-three-text';
+import {preloadFont} from './troika-three-text'
+import { InteractionManager } from './three.interactive';
+import { GLTFLoader } from './three/addons/loaders/GLTFLoader.js';
+import CameraControls from './camera-controls';
+import Papa from './papaparse';
+import hexTiling from './three-hex-tiling';
+import { UVsDebug } from './three/addons/utils/UVsDebug.js';
+import data from '/assets/data/data3.json' with { type: 'json' };
+
 
 CameraControls.install( { THREE: THREE } );
 
@@ -42,7 +43,7 @@ function loadScene() {
 
 
     const grass_tex = new THREE.TextureLoader().load(
-        "textures/grass.jpg"
+        "assets/textures/grass.jpg"
     );
 
     grass_tex.wrapS = THREE.RepeatWrapping;
@@ -51,7 +52,7 @@ function loadScene() {
     grass_tex.repeat.set(800, 800);
 
     const road_tex = new THREE.TextureLoader().load(
-        "textures/asphalt.jpg"
+        "assets/textures/asphalt.jpg"
     );
 
     const scene = new THREE.Scene();
@@ -65,7 +66,7 @@ function loadScene() {
 function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 {
 
-    loader.load('models/' + modelName + '.glb', function(gltf) {
+    loader.load('assets/models/' + modelName + '.glb', function(gltf) {
     const modelOriginal = gltf.scene;
     
     modelOriginal.scale.set(scale, scale, scale);
@@ -383,7 +384,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         
                 
         myText.fontSize = 4;
-        myText.font = '/fonts/Highwaygothicd-KV5Dp.otf';
+        myText.font = 'assets/fonts/Highwaygothicd-KV5Dp.otf';
         myText.text = name.nameEn + "\n" + timeSpan;
         myText.material = distanceWhiteMaterial;
         
@@ -622,7 +623,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     }
 
     //only draw timeline if we can retrieve the csv data
-    Papa.parse('./data/iconData.csv', {
+    Papa.parse('assets/data/iconData.csv', {
     header: true,
     download: true,
     dynamicTyping: true,
