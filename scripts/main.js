@@ -1,19 +1,19 @@
 import * as THREE from 'three';
-import {MathUtils} from './three';
-import { MeshLineGeometry, MeshLineMaterial, raycast } from './meshline';
-import JEASINGS, { JEasing, Linear } from './jeasings';
-import { Line2 } from './three/addons/lines/Line2.js';
-import { LineMaterial } from './three/addons/lines/LineMaterial.js';
-import { LineGeometry } from './three/addons/lines/LineGeometry.js';
-import {Text} from './troika-three-text';
-import {preloadFont} from './troika-three-text'
-import { InteractionManager } from './three.interactive';
-import { GLTFLoader } from './three/addons/loaders/GLTFLoader.js';
-import CameraControls from './camera-controls';
-import Papa from './papaparse';
-import hexTiling from './three-hex-tiling';
-import { UVsDebug } from './three/addons/utils/UVsDebug.js';
-import data from '/assets/data/data3.json' with { type: 'json' };
+import {MathUtils} from 'three';
+import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
+import JEASINGS, { JEasing, Linear } from 'jeasings';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import {Text} from 'troika-three-text';
+import {preloadFont} from 'troika-three-text'
+import { InteractionManager } from 'three.interactive';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import CameraControls from 'camera-controls';
+import Papa from 'papaparse';
+import 'three-hex-tiling';
+import { UVsDebug } from 'three/addons/utils/UVsDebug.js';
+import data from '/maps/data3.json' with { type: 'json' };
 
 
 CameraControls.install( { THREE: THREE } );
