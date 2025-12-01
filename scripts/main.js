@@ -39,9 +39,6 @@ function loadScene() {
     );
 
 
-
-
-
     const grass_tex = new THREE.TextureLoader().load(
         "assets/textures/grass.jpg"
     );
@@ -458,9 +455,9 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
             const centerStripe = new THREE.Shape();
 
-            centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
+            centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x - 512);
             //bottom right
-            centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
+            centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x - 512);
             //top right
             centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
             //top left
