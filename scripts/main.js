@@ -23,7 +23,7 @@ const loader = new GLTFLoader();
 
 window.onload = () => loadScene();
 
-
+let distMul = 500;
 
 function loadScene() {
 
@@ -55,9 +55,9 @@ function loadScene() {
     const scene = new THREE.Scene();
     const color = 0x8888ff;  // blue
     let near = 250;
-    let far = 500;
+    let far = 800;
     scene.background = new THREE.Color(color);
-    scene.fog = new THREE.Fog(color, near, far);
+    //scene.fog = new THREE.Fog(color, near, far);
 
     //draws a model to the scene given name and position, with optional interactive, scale, and group inputs
 function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
@@ -72,9 +72,7 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         //mod.layers.set(5);
     if (mod.isMesh) {
       // Replace the material with MeshBasicMaterial for unlit effect
-      mod.material = new THREE.MeshToonMaterial({
-        vertexColors: true, // Retain the texture if it exists
-      });
+      //mod.material = new THREE.MeshStandardMaterial({vertexColors: true});
     }
   });
 
@@ -129,7 +127,6 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
 
     const obj = data;
-    console.log(obj.attributes);
     cameraControls.setLookAt(0, 0, 250, 0, 0, 0);
 
     const groundMat = new THREE.MeshStandardMaterial({
@@ -216,9 +213,25 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     function getTimeDifference(src, dest){
         let timeStart = obj.nodes.find(item => item.key === src);
         let timeMul = obj.nodes.find(item => item.key === dest);
-        let expireTime = new Date(timeMul.attributes.content.date.timestamp);
-        let days = (expireTime - new Date(timeStart.attributes.content.date.timestamp)) / (1000 * 60 * 60 * 24);
-        return days;
+        let expireTime;// = new Date(timeMul.attributes.content.date.timestamp);
+        //let startTime;// = new Date(timeStart.attributes.content.date.timestamp);
+        
+        expireTime = timeMul.attributes.content.date.quantity;
+        
+        switch(timeMul.attributes.content.date.timespan){
+            case "days":
+                expireTime *= 1;
+            break;
+            case "months":
+                expireTime *= 30;
+            break;
+            case "years":
+                expireTime *= 365;
+            break;
+        }
+
+        let days = expireTime;
+        return days*2;
     }
 
     function drawSign(curveSize, xPos, yPos, width, height, mat, group, amount, offset){
@@ -255,6 +268,20 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         signMesh.position.x = xPos;
         signMesh.position.y = yPos;
         signMesh.position.z = offset;
+
+        group.addEventListener('mouseover', (event) => {
+                event.target.scale.set(1.5 , 1.5    , 1.5);
+                event.target.position.x -= 5;
+            });
+
+        group.addEventListener('mouseout', (event) => {
+                event.target.scale.set(1, 1, 1);
+                event.target.position.x += 5;
+            });
+
+
+        //interactionManager.add(group);
+
         group.add(signMesh);
     }
 
@@ -476,6 +503,14 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
             //const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: true, opacity: 0.3});
             const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
+            const dash_material = new THREE.LineDashedMaterial({
+                color: 0xff0000, // Red color for the dashes
+                linewidth: 2,    // Thickness of the line
+                scale: 2,        // How the dash and gap sizes are scaled
+                dashSize: 2,     // Length of a dash segment
+                gapSize: 2,      // Length of the gap between dashes
+                transparent: true // Important for correct rendering of dashes
+            });
             const grey = new THREE.MeshBasicMaterial({color:0xbbbbbb, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending});
 
             const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
@@ -494,10 +529,10 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
 
         }else{
             //bottom left
-            shape.moveTo(nodePos[end].y-12, nodePos[start].x+25);
+            shape.moveTo(nodePos[start].y-12, nodePos[start].x);
 
             //bottom right
-            shape.lineTo(nodePos[end].y+12, nodePos[start].x+25);
+            shape.lineTo(nodePos[start].y+12, nodePos[start].x);
 
             //top right
             shape.lineTo(nodePos[end].y+12, nodePos[end].x);
@@ -528,19 +563,19 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             const fillerMesh = new THREE.Mesh(fillerGeo, roadMat);
             fillerMesh.position.z = 0.5;
 
-            scene.add(fillerMesh);
+            //scene.add(fillerMesh);
 
             const centerStripe = new THREE.Shape();
 
             centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
             //bottom right
             centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
-            centerStripe.lineTo(nodePos[end].y+0.5, nodePos[start].x+25);
+            //centerStripe.lineTo(nodePos[end].y+0.5, nodePos[start].x+25);
             //top right
             centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
             //top left
             centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
-            centerStripe.lineTo(nodePos[end].y-0.5, nodePos[start].x+25);
+            //centerStripe.lineTo(nodePos[end].y-0.5, nodePos[start].x+25);
             
             const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
 
@@ -578,9 +613,12 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
                 nodePos[src] = new THREE.Vector2(level, 0);
                 sources[src] = 1;
 
+                //draws distance between single node
                 if(!(dest in nodePos))  {
+                    //draw with time difference
+                    //nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
                     
-                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
+                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest), 0);
                     sources[dest] = 0;
                 }
                 
@@ -589,12 +627,13 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             }   else    {
                 sources[src] += 1;
                 if(!(dest in nodePos))  {
-
-                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest)/2, sources[src]/childCount * 60 - 45);
+                    //draws spaced shape
+                    console.log(distMul);
+                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest), (sources[src]-1.5) * distMul);
+                    //nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest)/2, sources[src]/childCount * 60 - 45);
                 }
                 
             }
-            console.log(sources[src] + " : " + childCount);
             
             drawRoad(src, dest, sources[src], childCount);
         }
@@ -625,9 +664,8 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     download: true,
     dynamicTyping: true,
     complete: function(results) {
-        //console.log(results);
+
         dataID = results.data;
-        //console.log(dataID);
         
         for(let i = 0; i < dataID.length; i++){
             modelPaths[dataID[i].id.toString()] = dataID[i].icon.toString();
@@ -646,10 +684,8 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
     }
 
     function toggleCam() {
-        console.log("toggle");
 
         if(!toggled) {
-            console.log("enable layer");
                 //scene.fog = new THREE.Fog(color, 0, 10);
         }else{
             cameraControls.setLookAt(0, 0, 250, 0, 0, 0, true);
@@ -766,6 +802,12 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         el.attachEvent('onclick', toggleCam);
 
     var cameraCon = document.getElementById("CC");
+
+    var slide = document.getElementById('myRange');
+
+    slide.onchange = function() {
+        
+    }
 
     if(cameraCon.addEventListener)
             cameraCon.addEventListener("click", toggleCameraControls);
