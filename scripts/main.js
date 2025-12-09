@@ -1,566 +1,107 @@
 import * as THREE from 'three';
+import { loadModel } from './loadModel.js';
+import {roadMat, dashedShapeMaterial, groundMat, dotMaterial, yellow } from './materials.js';
+import {drawSign, drawQuad, drawRoad, drawSphere, drawTriangleSign, loadSign } from './shapes.js';
+import { renderer, cameraMain, cameraControls, toggleCameraControls} from './camera.js';
 import {MathUtils} from 'three';
-import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
-import JEASINGS, { JEasing, Linear } from 'jeasings';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { interactionManager, toggleScenePerspective, toggled } from './interaction.js';
+
 import {Text} from 'troika-three-text';
-import {preloadFont} from 'troika-three-text'
-import { InteractionManager } from 'three.interactive';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import CameraControls from 'camera-controls';
+import {preloadFont} from 'troika-three-text';
+
 import Papa from 'papaparse';
-import 'three-hex-tiling';
-import { UVsDebug } from 'three/addons/utils/UVsDebug.js';
 import data from '/maps/data3.json' with { type: 'json' };
-
-
-CameraControls.install( { THREE: THREE } );
-
-//models
-const loader = new GLTFLoader();
 
 window.onload = () => loadScene();
 
-
-
 function loadScene() {
 
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
-    const renderer = new THREE.WebGLRenderer();
+    //scene setup
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
-    const interactionManager = new InteractionManager(
-        renderer,
-        camera,
-        renderer.domElement
-    );
-
-
-    const grass_tex = new THREE.TextureLoader().load(
-        "assets/textures/grass.jpg"
-    );
-
-    grass_tex.wrapS = THREE.RepeatWrapping;
-    grass_tex.wrapT = THREE.RepeatWrapping;
-
-    grass_tex.repeat.set(800, 800);
-
-    const road_tex = new THREE.TextureLoader().load(
-        "assets/textures/asphalt.jpg"
-    );
 
     const scene = new THREE.Scene();
     const color = 0x8888ff;  // blue
     let near = 250;
-    let far = 500;
+    let far = 800;
     scene.background = new THREE.Color(color);
-    scene.fog = new THREE.Fog(color, near, far);
-
-    //draws a model to the scene given name and position, with optional interactive, scale, and group inputs
-function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
-{
-
-    loader.load('assets/models/' + modelName + '.glb', function(gltf) {
-    const modelOriginal = gltf.scene;
-    
-    modelOriginal.scale.set(scale, scale, scale);
-    modelOriginal.position.set(x,y,z);
-    modelOriginal.traverse((mod) => {
-        //mod.layers.set(5);
-    if (mod.isMesh) {
-      // Replace the material with MeshBasicMaterial for unlit effect
-      mod.material = new THREE.MeshToonMaterial({
-        vertexColors: true, // Retain the texture if it exists
-      });
-    }
-  });
-
-   
-  if(highlightable){
-    modelOriginal.addEventListener('mouseover', (event) => {
-                event.target.scale.set(3 + 1, 3 + 1, 3 + 1);
-            });
-
-            modelOriginal.addEventListener('mouseout', (event) => {
-                event.target.scale.set(3, 3, 3);
-            });
-
-            modelOriginal.addEventListener('click', (event) => {
-                moveCam(x, y, 0, 0, -50, 30);
-            });
-
-        interactionManager.add(modelOriginal);
-    }
-
-    if(group){
-        group.add(modelOriginal);
-    }else{
-        scene.add(modelOriginal);
-    }    
-
-}, undefined, function ( error ) {
-
-  console.error( error );
-
-} );
-}
-
-    const clock = new THREE.Clock();
-    const cameraControls = new CameraControls(camera, renderer.domElement);
+    ///scene.fog = new THREE.Fog(color, near, far);
 
     const directionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
     directionalLight.castShadow = true;
     directionalLight.target.position.x = 20;
     directionalLight.target.position.y = 20;
     directionalLight.target.position.z = -20;
+
     scene.add(directionalLight);
     scene.add(directionalLight.target);
 
     const planeGeo = new THREE.PlaneGeometry();
-
-    const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: true, opacity: 0.3});
-
+    
     var dataID; //gets icon information from csv file
     let modelPaths = {};
 
-
-
     const obj = data;
-    console.log(obj.attributes);
     cameraControls.setLookAt(0, 0, 250, 0, 0, 0);
-
-    const groundMat = new THREE.MeshStandardMaterial({
-        map: grass_tex,
-        hexTiling: {
-            patchScale: 3,
-            useContrastCorrectedBlending: true,
-            lookupSkipThreshold: 0.01,
-            textureSampleCoefficientExponent: 8,
-        }
-    });
-
-    const uniforms = {
-        u_customTexture: {value: road_tex}
-    };
-
-    const roadMat = new THREE.ShaderMaterial( {
-        uniforms: uniforms,
-        fragmentShader: fragmentShader(),
-        vertexShader: vertexShader()
-    })
-
-    function vertexShader() {
-    return `
-        varying vec3 vUv; 
-
-        void main() {
-        vUv = position * vec3(.1, .1, 1); 
-
-        vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * modelViewPosition; 
-        }
-    `
-    }
-
-    function fragmentShader(){
-        return `
-        uniform sampler2D u_customTexture;
-        varying vec3 vUv;
-
-        void main() {
-            vec2 UV = vec2(fract(vUv.x), fract(vUv.y));
-            vec4 texColor = texture2D(u_customTexture, UV); 
-            gl_FragColor = texColor;
-        }
-    `
-    }
 
     const ground = new THREE.Mesh(planeGeo, groundMat);
 
     ground.name = "ground";
-    ground.scale.x = 3000;
+    ground.scale.x = 5000;
     ground.scale.y = 5000;
     scene.add(ground);
-
-
-    function drawSphere(x = 0, y = 0, z = 0, size = 20, mat = dotMaterial)
-    {
-        const sphereGeo = new THREE.SphereGeometry();
-        const sphereObj = new THREE.Mesh(sphereGeo, mat);
-        sphereObj.name = "sphere";
-        sphereObj.scale.set(size, size, 1);
-        sphereObj.position.set(x,y,z);
-        scene.add(sphereObj);
-
-        sphereObj.addEventListener('mouseover', (event) => {
-                event.target.scale.set(size + 1, size + 1, 1);
-            });
-
-            sphereObj.addEventListener('mouseout', (event) => {
-                event.target.scale.set(size, size, 1);
-            });
-
-            sphereObj.addEventListener('click', (event) => {
-                moveCam(x, y, 0, 0, -50, 20);
-            });
-
-        interactionManager.add(sphereObj);
-    }
 
     const nodePos = {};
     let sources = {};
 
-    function getTimeDifference(src, dest){
-        let timeStart = obj.nodes.find(item => item.key === src);
+    function getTimeDifference(dest){
         let timeMul = obj.nodes.find(item => item.key === dest);
-        let expireTime = new Date(timeMul.attributes.content.date.timestamp);
-        let days = (expireTime - new Date(timeStart.attributes.content.date.timestamp)) / (1000 * 60 * 60 * 24);
+        let expireTime;
+        
+        expireTime = timeMul.attributes.content.date.quantity;
+        
+        switch(timeMul.attributes.content.date.timespan){
+            case "days":
+                expireTime *= 1;
+            break;
+            case "months":
+                expireTime *= 30;
+            break;
+            case "years":
+                expireTime *= 365;
+            break;
+        }
+
+        let days = expireTime;
         return days;
     }
+    const light = new THREE.AmbientLight( 0x00ffff ); // soft white light
+    scene.add( light );
 
-    function drawSign(curveSize, xPos, yPos, width, height, mat, group, amount, offset){
-        const shape = new THREE.Shape();
 
-        shape.moveTo(curveSize, 0);
-
-        shape.lineTo(curveSize + width, 0);
-        shape.bezierCurveTo(curveSize + width + amount, 0, curveSize + width + curveSize, curveSize - amount, curveSize + width + curveSize, curveSize);
-
-        shape.lineTo(curveSize + width + curveSize, curveSize + height);
-        shape.bezierCurveTo(curveSize + width + curveSize, curveSize + height + amount, curveSize + width + amount, curveSize + height + curveSize, curveSize + width, curveSize + height + curveSize);
-        
-        shape.lineTo(curveSize, curveSize + height + curveSize);
-        shape.bezierCurveTo(curveSize - amount, curveSize + height + curveSize, 0, curveSize + height + amount, 0, height + curveSize);
-        
-        shape.lineTo(0, curveSize);
-        shape.bezierCurveTo(0, curveSize - amount, curveSize - amount, 0, curveSize, 0);
-
-        const extrudeSettings = {
-            steps: 0,
-            depth: 0,
-            bevelEnabled: false,
-            bevelThickness: 0,
-            bevelSize: 0,
-            bevelOffset: 0,
-            bevelSegments: 0,
-            UVGenerator: uvGenerator,
-        };
-
-        const signGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings); 
-        
-        const signMesh = new THREE.Mesh(signGeo, mat);
-        signMesh.position.x = xPos;
-        signMesh.position.y = yPos;
-        signMesh.position.z = offset;
-        group.add(signMesh);
-    }
-
-    function drawQuad(xPos, yPos, width, height, mat, group, offset){
-        const shape = new THREE.Shape();
-        //bottom left
-        
-        shape.moveTo(xPos, yPos);
-        shape.lineTo(xPos + width, yPos);
-        shape.lineTo(xPos + width, yPos + height);
-        shape.lineTo(xPos, yPos + height);
-
-        const extrudeSettings = {
-            steps: 0,
-            depth: 0,
-            bevelEnabled: false,
-            bevelThickness: 0,
-            bevelSize: 0,
-            bevelOffset: 0,
-            bevelSegments: 0,
-            UVGenerator: uvGenerator,
-        };
-
-        const quadGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings); 
-        
-        const quadMesh = new THREE.Mesh(quadGeo, mat);
-        quadMesh.position.z = offset;
-        quadMesh.layers.set(5);
-        group.add(quadMesh);
-    }
-
-    function worldPositionVertexShader() {
-    return `
-        varying vec3 vWorldPosition;
-        void main() {
-        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-        vWorldPosition = worldPosition.xyz;
-        gl_Position = projectionMatrix * viewMatrix * worldPosition;
-        }
-    `
-    }
-
-    function distanceAlphaFragmentShader()
-    {
-        return  `
-        uniform vec3 nearColor;
-        uniform vec3 farColor;
-        uniform float maxDistance;
-        varying vec3 vWorldPosition;
-
-        void main() {
-        float dist = distance(cameraPosition, vWorldPosition) - 30.0;
-        float t = clamp(dist / maxDistance, 0.0, 1.0);
-        gl_FragColor = vec4(nearColor, t);
-        }
-    `
-    }
-
-    const distanceSignMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        nearColor: { value: new THREE.Color(0x01735C) },
-        maxDistance: { value: 10.0 }
-    },
-    vertexShader: worldPositionVertexShader(),
-    fragmentShader: distanceAlphaFragmentShader(),
-        transparent: true, // allow alpha blending
-        depthWrite: false, // prevents depth buffer from overwriting transparent pixels
-        blending: THREE.NormalBlending
-    });
-
-    const distanceWhiteMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        nearColor: { value: new THREE.Color(0xffffff) },
-        maxDistance: { value: 10.0 }
-    },
-    vertexShader: worldPositionVertexShader(),
-    fragmentShader: distanceAlphaFragmentShader(),
-        transparent: true, // allow alpha blending
-        depthWrite: false, // prevents depth buffer from overwriting transparent pixels
-        blending: THREE.NormalBlending
-    });
-
-    const distanceGreyMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        nearColor: { value: new THREE.Color(0xaaaaaa) },
-        maxDistance: { value: 10.0 }
-    },
-    vertexShader: worldPositionVertexShader(),
-    fragmentShader: distanceAlphaFragmentShader(),
-        transparent: true, // allow alpha blending
-        depthWrite: false, // prevents depth buffer from overwriting transparent pixels
-        blending: THREE.NormalBlending
-    });
-
-    function loadSign(key){
-        let name = dataID.find(item => item.id === key);
-        let date = obj.nodes.find(item => item.key === key);
-
-        let count = date.attributes.content.date.quantity;
-        let span = date.attributes.content.date.timespan;
-
-        const timeSpan = count.toString() + " " + span.toString();
-
-        const nameLength = name.nameEn.length;
-
-        const width = Math.max(nameLength, timeSpan.length);
-
-        let signGroup = new THREE.Group();
-        const signMat = new THREE.MeshToonMaterial({color:0x01735C});
-        const white = new THREE.MeshToonMaterial({color:0xffffff});
-
-        drawSign(2, 0+6, -1-8, 50, 14, distanceSignMaterial, signGroup, 1, -.1);
-        drawSign(2, 1+6, 0-8, 48, 12, distanceWhiteMaterial, signGroup, 2, 0);
-        drawSign(2, 1.5+6, 0.5-8, 47, 11, distanceSignMaterial, signGroup, 2, 0.1);
-
-        //draw sign legs
-        const legMat = new THREE.MeshToonMaterial({color:0xaaaaaa});
-        drawQuad(14, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
-        drawQuad(49, -15, 2, 14, distanceGreyMaterial, signGroup, -0.2);
-        
-        signGroup.name = "Sign" + name.nameEn;
-
-        const myText = new Text();
-        
-                
-        myText.fontSize = 4;
-        myText.font = 'assets/fonts/Highwaygothicd-KV5Dp.otf';
-        myText.text = name.nameEn + "\n" + timeSpan;
-        myText.material = distanceWhiteMaterial;
-        
-        //myText.color = 0xFFFFFF;
-        myText.anchorX = 'middle';
-        myText.anchorY = 'middle';
-        myText.position.x = 9;
-        myText.position.y = 0;
-        myText.rotation.z = Math.PI/180;
-        myText.position.z = 1.2;
-        signGroup.add(myText);
-        signGroup.position.x = nodePos[key].y + 8;
-        signGroup.position.y = nodePos[key].x;
-        signGroup.position.z = 8;
-        scene.add(signGroup);
-        
-        
-        myText.sync();
-    }
-
-    const lineMat = new THREE.MeshBasicMaterial({map:road_tex});
-
-    var uvGenerator =  {
-        generateTopUV:  function(geometry, vertices, idxA, idxB, idxC) {
-                            var ax, ay, bx, by, cx, cy;
-
-                return([
-                    new THREE.Vector2(0, 0),
-                    new THREE.Vector2(1, 0),
-                    new THREE.Vector2(1, 1),
-                    new THREE.Vector2(0, 1),
-                ]);
-        },
-        generateSideWallUV: function(geometry, vertices, idxA, idxB, idxC, idxD) {
-            return([
-                new THREE.Vector2(0, 0),
-                new THREE.Vector2(1, 0),
-                new THREE.Vector2(1, 1),
-                new THREE.Vector2(0, 1),
-            ]);
-    }
-    }
-
-    function drawRoad(start, end, sourceCount, childCount){
-
-        const shape = new THREE.Shape();
-
-        const extrudeSettings = {
-            steps: 0,
-            depth: 0,
-            bevelEnabled: false,
-            bevelThickness: 0,
-            bevelSize: 0,
-            bevelOffset: 0,
-            bevelSegments: 0,
-            UVGenerator: uvGenerator,
-        };
-
-        if(childCount < 2){
-            //bottom left
-            shape.moveTo(nodePos[start].y-12, nodePos[start].x-512);
-
-            //bottom right
-            shape.lineTo(nodePos[start].y+12, nodePos[start].x-512);
-
-            //top right
-            shape.lineTo(nodePos[end].y+12, nodePos[end].x + 12);
-
-            //top left
-            shape.lineTo(nodePos[end].y-12, nodePos[end].x + 12);
-
-            const centerStripe = new THREE.Shape();
-
-            centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x - 512);
-            //bottom right
-            centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x - 512);
-            //top right
-            centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
-            //top left
-            centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
-
-
-            const leftStripe = new THREE.Shape();
-
-            leftStripe.moveTo(nodePos[start].y+12, nodePos[start].x);
-            //bottom right
-            leftStripe.lineTo(nodePos[start].y+11, nodePos[start].x);
-            //top right
-            leftStripe.lineTo(nodePos[end].y+11, nodePos[end].x);
-            //top left
-            leftStripe.lineTo(nodePos[end].y+12, nodePos[end].x);
-
-            //const dotMaterial = new THREE.MeshBasicMaterial({color:0xffffff, transparent: true, opacity: 0.3});
-            const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
-            const grey = new THREE.MeshBasicMaterial({color:0xbbbbbb, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending});
-
-            const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
-            const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
-            centerStripeMesh.position.z = 0.65;
-
-            scene.add(centerStripeMesh);
-
-            const leftStripeGeo = new THREE.ExtrudeGeometry(leftStripe, extrudeSettings);
-            const leftStripeMesh = new THREE.Mesh(leftStripeGeo, grey);
-            leftStripeMesh.position.z = 0.6;
-
-            //scene.add(leftStripeMesh);
-
-
-
-        }else{
-            //bottom left
-            shape.moveTo(nodePos[end].y-12, nodePos[start].x+25);
-
-            //bottom right
-            shape.lineTo(nodePos[end].y+12, nodePos[start].x+25);
-
-            //top right
-            shape.lineTo(nodePos[end].y+12, nodePos[end].x);
-
-            //top left
-            shape.lineTo(nodePos[end].y-12, nodePos[end].x);
-
-            const fillerShape = new THREE.Shape();
-
-            
-
-            fillerShape.moveTo(nodePos[end].y-12, nodePos[start].x+25);
-
-            //fillerShape.lineTo(nodePos[start].y, nodePos[start].x + 20);
-
-            fillerShape.lineTo(nodePos[end].y+12, nodePos[start].x+25);
-
-            //fillerShape.lineTo(nodePos[start].y, nodePos[start].x+15);
-
-            //bottom left
-            fillerShape.moveTo(nodePos[start].y + 12, nodePos[start].x);
-
-            //bottom right
-            fillerShape.lineTo(nodePos[start].y - 12, nodePos[start].x);
-
-            const fillerGeo = new THREE.ExtrudeGeometry(fillerShape, extrudeSettings);
-            const fillMat = new THREE.MeshBasicMaterial({color:0xff0000});
-            const fillerMesh = new THREE.Mesh(fillerGeo, roadMat);
-            fillerMesh.position.z = 0.5;
-
-            scene.add(fillerMesh);
-
-            const centerStripe = new THREE.Shape();
-
-            centerStripe.moveTo(nodePos[start].y-0.5, nodePos[start].x);
-            //bottom right
-            centerStripe.lineTo(nodePos[start].y+0.5, nodePos[start].x);
-            centerStripe.lineTo(nodePos[end].y+0.5, nodePos[start].x+25);
-            //top right
-            centerStripe.lineTo(nodePos[end].y+0.5, nodePos[end].x);
-            //top left
-            centerStripe.lineTo(nodePos[end].y-0.5, nodePos[end].x);
-            centerStripe.lineTo(nodePos[end].y-0.5, nodePos[start].x+25);
-            
-            const yellow = new THREE.MeshBasicMaterial({color:0xffff00, transparent: false, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false});
-
-            const centerStripeGeo = new THREE.ExtrudeGeometry(centerStripe, extrudeSettings);
-            const centerStripeMesh = new THREE.Mesh(centerStripeGeo, yellow);
-            centerStripeMesh.position.z = 0.65;
-
-            scene.add(centerStripeMesh);
-        }
-
-        const lineGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-        const lineMesh = new THREE.Mesh(lineGeo, roadMat);
-        lineMesh.position.z = 0.5;
-
-        scene.add(lineMesh);
-    }
+    
 
     function drawTimeline() {
-        let level = 0;
-
+        let startingGroup = new THREE.Group();
+        startingGroup.name = "hello";
+        const hereText = new Text();
+        hereText.color = 0xFFFF00;
+        hereText.fontSize = 4;
+        hereText.font = 'assets/fonts/Highwaygothicd-KV5Dp.otf';
+        hereText.text = "You are here.";
+        hereText.anchorX = 'right';
+        hereText.anchorY = 'middle';
+        hereText.sync();
+        hereText.position.x = -14;
+        hereText.position.z = 1;
+        startingGroup.add(hereText);
+        
+        
+        drawQuad(-14, -0.25, 12, 0.5, yellow, startingGroup, 1);
+        drawSphere(0, 0, 1, 3, scene, yellow, false);
+        scene.add(startingGroup);
+        let level = getTimeDifference(obj.edges[0].source)*2;
+        loadSign(obj.edges[0].source, dataID, obj, nodePos, scene, 0, level/2);
         for(let i = 0; i < obj.edges.length; i++) {
             
             const src = obj.edges[i].source;
@@ -578,9 +119,12 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
                 nodePos[src] = new THREE.Vector2(level, 0);
                 sources[src] = 1;
 
+                //draws distance between single node
                 if(!(dest in nodePos))  {
+                    //draw with time difference
+                    //nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
                     
-                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
+                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(dest)*2, 0);
                     sources[dest] = 0;
                 }
                 
@@ -589,207 +133,73 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
             }   else    {
                 sources[src] += 1;
                 if(!(dest in nodePos))  {
-
-                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(src, dest)/2, sources[src]/childCount * 60 - 45);
+                    //draws spaced shape
+                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(dest)*2, (sources[src]-1.5) * 300);
                 }
                 
             }
-            console.log(sources[src] + " : " + childCount);
-            
-            drawRoad(src, dest, sources[src], childCount);
+            drawRoad(src, dest, sources[src], childCount, nodePos, scene, roadMat, dataID, obj);
         }
 
 
         //draw spheres at positions
         for (const [key, value] of Object.entries(nodePos)) {
             
-            let name = dataID.find(item => item.id === key);
-            
             if(key in modelPaths)
             {
                 //draws all models to scene
-                loadModel(modelPaths[key], nodePos[key].y + 52, nodePos[key].x - 12, 6, false, 5);
+                loadModel(modelPaths[key], nodePos[key].y + 35, nodePos[key].x, 3.5, 5, scene);
                 
             }
 
-            loadSign(key);
-
-            drawSphere(value.y, value.x, .5, 5);
+            //loadSign(key, dataID, obj, nodePos, scene);
+            drawSphere(value.y, value.x, 0, 3, scene);
             
         }
     }
 
-    //only draw timeline if we can retrieve the csv data
+    //Read matching 3D models to data key
     Papa.parse('assets/data/iconData.csv', {
-    header: true,
-    download: true,
-    dynamicTyping: true,
-    complete: function(results) {
-        //console.log(results);
-        dataID = results.data;
-        //console.log(dataID);
-        
-        for(let i = 0; i < dataID.length; i++){
-            modelPaths[dataID[i].id.toString()] = dataID[i].icon.toString();
+        header: true,
+        download: true,
+        dynamicTyping: true,
+        complete: function(results) {
+
+            dataID = results.data;
+            
+            for(let i = 0; i < dataID.length; i++){
+                modelPaths[dataID[i].id.toString()] = dataID[i].icon.toString();
+            }
+
+            drawTimeline();
         }
-        drawTimeline();
-    }
     });
 
-    var toggled = false;
 
-    function moveCam(xPos, yPos, zPos, offsetX = 0, offsetY = 0, offsetZ = 70) {
-        cameraControls.setLookAt(xPos + offsetX + 15, yPos + offsetY+5, zPos+offsetZ + 5, xPos + 15, yPos, 10, true);
-        lineMat.linewidth = 10;
-        //toggled = true;
-        rotateText(true);
-    }
 
-    function toggleCam() {
-        console.log("toggle");
-
-        if(!toggled) {
-            console.log("enable layer");
-                //scene.fog = new THREE.Fog(color, 0, 10);
-        }else{
-            cameraControls.setLookAt(0, 0, 250, 0, 0, 0, true);
-            camera.layers.disable(5);
-            lineMat.linewidth = 2;
-            //toggled = false;
-            rotateText(false);
-                //scene.fog = new THREE.Fog(color, near, far);
-
-        }
-    }
-
-    const points = [];
-	const colors = [];
-
-    points.push( new THREE.Vector3( - 10, 0, 5 ) );
-    colors.push(new THREE.Color(1,1,1));
-    points.push( new THREE.Vector3( 0, 10, 5 ) );
-    colors.push(new THREE.Color(1,1,1));
-    points.push( new THREE.Vector3( 10, 0, 5 ) );
-    colors.push(new THREE.Color(1,1,1));
-
-    const geometry = new LineGeometry();
-	geometry.setPositions( points );
-	geometry.setColors( colors );
-
-    let matLine = new LineMaterial( {
-
-					color: 0xffffff,
-					linewidth: 15, // in world units with size attenuation, pixels otherwise
-					vertexColors: false,
-
-					dashed: true,
-					alphaToCoverage: true,
-
-				} );
-
-    let line = new Line2( geometry, matLine );
-    //const line = new THREE.Line( geometry, material );
-    scene.add( line );
-
-    function rotateText(zoomed){
-        let counter = 0;
-        if(toggled != zoomed){
-
-            if(zoomed) {
-                camera.layers.enable(5);
-            }else{
-                camera.layers.disable(5);
-            }
-        
-            scene.children.forEach(object => {
-            
-                if (object instanceof THREE.Object3D) {
-                    if(!toggled){
-                        
-                        //3d model would have scene name
-                        if(object.name == "Scene"){
-                            object.rotation.x = 90 * Math.PI/180;
-                            object.rotation.y = 315 * Math.PI/180;
-                            //object.position.x += 5;
-                            object.position.x -= 24;
-                            object.scale.x = 3;
-                            object.scale.y = 3;
-                            object.scale.z = 3;
-                            //object.rotation.z = 45 * Math.PI/180;
-                        }
-                    }
-                    else{
-                        
-                        if(object.name == "Scene"){
-                            object.scale.x = 5;
-                            object.scale.y = 5;
-                            object.scale.z = 5;
-                            object.position.x += 24;
-                            //object.position.x -= 5;
-                            object.rotation.x = 0 * Math.PI/180;
-                            object.rotation.y = 0 * Math.PI/180;
-                        }
-                        
-                    }
-                
-                }
-
-                if(object instanceof THREE.Group){
-                    if(object.name == "Scene") return;
-                    if(!toggled){
-                        object.rotation.x = 90 * Math.PI/180;
-                        //object.position.x -= 5;
-                        object.position.y += 2;
-                        object.scale.set(0.6,0.6,0.6);
-                    }else{
-                        object.rotation.x = 0 * Math.PI/180;
-                        //object.position.x += 15;
-                        object.position.y -= 2;
-                        object.scale.set(1,1,1);
-                    }
-                }
-            });
-
-            toggled = zoomed;
-
-        }
+    function toggleTopDownView() {
+        cameraControls.setLookAt(0, 0, 250, 0, 0, 0, true);
+        toggleScenePerspective(false, scene);
     }
 
 
-    //#region html input debugging
+    
 
     var el = document.getElementById("ToggleButton");
 
     if(el.addEventListener)
-            el.addEventListener("click", toggleCam);
+            el.addEventListener("click", toggleTopDownView);
     else if(el.attachEvent)
-        el.attachEvent('onclick', toggleCam);
+        el.attachEvent('onclick', toggleTopDownView);
 
     var cameraCon = document.getElementById("CC");
 
     if(cameraCon.addEventListener)
             cameraCon.addEventListener("click", toggleCameraControls);
 
-    //togglable debug camera controls
-    let cameraConOn = true;
     toggleCameraControls();
 
-    function toggleCameraControls() {
-        cameraConOn = !cameraConOn;
-
-        if(!cameraConOn){
-            cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
-            cameraControls.mouseButtons.middle = CameraControls.ACTION.NONE;
-            cameraControls.mouseButtons.right = CameraControls.ACTION.NONE;
-            cameraControls.mouseButtons.wheel = CameraControls.ACTION.NONE;
-        }else{
-            cameraControls.mouseButtons.left = CameraControls.ACTION.ROTATE;
-            cameraControls.mouseButtons.middle = CameraControls.ACTION.TRUCK;
-            cameraControls.mouseButtons.right = CameraControls.ACTION.TRUCK;
-            cameraControls.mouseButtons.wheel = CameraControls.ACTION.DOLLY;
-        }
-    }
-    //#endregion
+    const clock = new THREE.Clock();
 
     function animate() {
         requestAnimationFrame(animate);
@@ -801,7 +211,6 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
                     if(object.name == "Scene"){
                             let time = Date.now() * 0.001;
                             object.rotation.y = -time * .25;
-                            //object.rotation.z = 45 * Math.PI/180;
                         }
                     }
                     
@@ -811,19 +220,19 @@ function loadModel(modelName, x, y, z, highlightable = true, scale = 3, group)
         const delta = clock.getDelta();
         const hasControlsUpdated = cameraControls.update(delta);
         interactionManager.update();
-        JEASINGS.update();
 
         render();
     }
 
     window.addEventListener('resize', function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    cameraMain.aspect = window.innerWidth / window.innerHeight;
+    cameraMain.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+
     });
 
     function render() {
-        renderer.render(scene, camera);
+        renderer.render(scene, cameraMain);
     }
 
     animate();
