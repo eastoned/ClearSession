@@ -1,5 +1,5 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { vertexColorMat } from './materials.js';
+import { vertexColorMat, brightMat } from './materials.js';
 //models
 const loader = new GLTFLoader();
 //draws a model to the scene given name and position, with optional interactive, scale, and group inputs
@@ -15,8 +15,14 @@ export function loadModel(modelName, x, y, z, scale = 3, scene, group)
     modelOriginal.traverse((mod) => {
         //mod.layers.set(5);
     if (mod.isMesh) {
-      // Replace the material with MeshBasicMaterial for unlit effect
-      mod.material = vertexColorMat;
+      if(mod.geometry.attributes.color){
+        mod.material = vertexColorMat;
+      }else{
+        mod.material.emissive.set(mod.material.color);
+        //mod.material.emissiveIntensity.set(0);
+        //mod.material = brightMat;
+      }
+      
     }
     
   });

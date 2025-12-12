@@ -127,7 +127,7 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
 
         }else{
 
-            loadSign(end, dataID, obj, pos, scene, (pos[start].y) - vec.x*80, (pos[start].x) - vec.y*80);
+            loadSign(end, dataID, obj, pos, scene, (pos[start].y) - vec.x*100, (pos[start].x) - vec.y*100);
             //bottom left
             shape.moveTo(pos[start].y + (vec.y*12), pos[start].x - (vec.x*12));
 
@@ -195,8 +195,8 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
             cyl.position.z = 1;
 
             cyl.layers.set(1);
-            warnG.position.x = (pos[start].y) - vec.x*56 + 13;
-            warnG.position.y = (pos[start].x) - vec.y*56;
+            warnG.position.x = (pos[start].y) - vec.x*90 + 16;
+            warnG.position.y = (pos[start].x) - vec.y*90;
             warnG.add(cyl);
             scene.add(warnG);
         }
@@ -336,7 +336,7 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
         drawSign(2, 6, -9, 50, 14, distanceSignMaterial, signGroup, 1, -.1);
         drawSign(2, 7, -8, 48, 12, distanceWhiteMaterial, signGroup, 2, 0);
         drawSign(2, 7.5, -7.5, 47, 11, distanceSignMaterial, signGroup, 2, .1);
-        const cylGeo = new THREE.CylinderGeometry(1,1,30,12);
+        const cylGeo = new THREE.CylinderGeometry(1,1,35,12);
         const cyl = new THREE.Mesh(cylGeo, distanceGreyMaterial);
         
         cyl.position.x = 50;

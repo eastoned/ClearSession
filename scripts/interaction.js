@@ -11,9 +11,18 @@ export const interactionManager = new InteractionManager(
 export var toggled = false;
 
 export function toggleScenePerspective(zoomed, scene){
-        let counter = 0;
+
         if(toggled != zoomed){
             cameraMain.layers.toggle(1);
+            if(!toggled){
+                console.log("not toggle");
+                cameraControls.fov = 10;
+            }else{
+                console.log("toggle");
+                cameraControls.fov = 100;
+                
+            }
+            
         
             scene.children.forEach(object => {
             
@@ -26,9 +35,9 @@ export function toggleScenePerspective(zoomed, scene){
                             object.rotation.y = 315 * Math.PI/180;
                             object.position.x -= 14;
                             //object.position.y += 14;
-                            object.scale.x = 3;
-                            object.scale.y = 3;
-                            object.scale.z = 3;
+                            object.scale.x = 5;
+                            object.scale.y = 5;
+                            object.scale.z = 5;
                         }
                     }
                     else{
@@ -71,4 +80,5 @@ export function toggleScenePerspective(zoomed, scene){
             toggled = zoomed;
 
         }
+        
     }

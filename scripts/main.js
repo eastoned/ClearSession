@@ -27,7 +27,7 @@ function loadScene() {
     scene.background = new THREE.Color(color);
     ///scene.fog = new THREE.Fog(color, near, far);
 
-    const directionalLight = new THREE.DirectionalLight( 0xffffff, 3 );
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
     directionalLight.castShadow = true;
     directionalLight.target.position.x = 20;
     directionalLight.target.position.y = 20;
@@ -78,9 +78,6 @@ function loadScene() {
     const light = new THREE.AmbientLight( 0x00ffff ); // soft white light
     scene.add( light );
 
-
-    
-
     function drawTimeline() {
         let startingGroup = new THREE.Group();
         startingGroup.name = "hello";
@@ -100,7 +97,7 @@ function loadScene() {
         drawQuad(-14, -0.25, 12, 0.5, yellow, startingGroup, 1);
         drawSphere(0, 0, 1, 3, scene, yellow, false);
         scene.add(startingGroup);
-        let level = getTimeDifference(obj.edges[0].source)*2;
+        let level = getTimeDifference(obj.edges[0].source)*3;
         loadSign(obj.edges[0].source, dataID, obj, nodePos, scene, 0, level/2);
         for(let i = 0; i < obj.edges.length; i++) {
             
@@ -124,7 +121,7 @@ function loadScene() {
                     //draw with time difference
                     //nodePos[dest] = new THREE.Vector2(level + getTimeDifference(src, dest)/2, 0);
                     
-                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(dest)*2, 0);
+                    nodePos[dest] = new THREE.Vector2(level + getTimeDifference(dest)*3, 0);
                     sources[dest] = 0;
                 }
                 
@@ -134,7 +131,7 @@ function loadScene() {
                 sources[src] += 1;
                 if(!(dest in nodePos))  {
                     //draws spaced shape
-                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(dest)*2, (sources[src]-1.5) * 300);
+                    nodePos[dest] = new THREE.Vector2(nodePos[src].x + getTimeDifference(dest)*3, (sources[src]-1.5) * 900);
                 }
                 
             }
@@ -148,7 +145,7 @@ function loadScene() {
             if(key in modelPaths)
             {
                 //draws all models to scene
-                loadModel(modelPaths[key], nodePos[key].y + 35, nodePos[key].x, 3.5, 5, scene);
+                loadModel(modelPaths[key], nodePos[key].y + 34, nodePos[key].x, 8, 5, scene);
                 
             }
 

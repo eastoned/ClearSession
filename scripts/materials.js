@@ -1,6 +1,7 @@
     import * as THREE from 'three';
     import 'three-hex-tiling';
-    export const vertexColorMat = new THREE.MeshStandardMaterial({vertexColors: true});
+    export const vertexColorMat = new THREE.MeshBasicMaterial({vertexColors: true});
+    export const brightMat = new THREE.MeshToonMaterial();
     export const dotMaterial = new THREE.MeshBasicMaterial({color:0xffff00, transparent: true, depthTest: false, opacity: 0.3});
     export const yellow = new THREE.MeshBasicMaterial({color:0xffff00});
 
