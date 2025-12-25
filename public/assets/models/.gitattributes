@@ -1,0 +1,2 @@
+modelTest.glb filter=lfs diff=lfs merge=lfs -text
+sphygmomanometer.glb filter=lfs diff=lfs merge=lfs -text
