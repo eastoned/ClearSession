@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { loadModel, loadSampleModel } from './loadModel.js';
+import { loadModel } from './loadModel.js';
 import {roadMat, dashedShapeMaterial, groundMat, dotMaterial, yellow, togglePalette } from './materials.js';
 import {drawSign, drawQuad, drawRoad, drawSphere, drawTriangleSign, loadSign } from './shapes.js';
 import { renderer, cameraMain, cameraControls, toggleCameraControls, SetCameraState, CameraState, focusPosition, focusTarget} from './camera.js';
@@ -22,7 +22,6 @@ function loadScene() {
     document.body.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    loadSampleModel(scene);
     
 
     const color = 0x8888ff;  // blue
@@ -207,17 +206,6 @@ function loadScene() {
     let modelDebug = false;
     cameraMain.layers.disable(5);
     cameraMain.layers.disable(3)
-
-    show_model.addEventListener("click", () => { toggleModels() });
-
-    function toggleModels(){
-        modelDebug = !modelDebug;
-        if(modelDebug) {
-            cameraMain.layers.enable(3)
-        }else{
-             cameraMain.layers.disable(3);
-            }
-    }
 
     function SetCameraView(view){
         SetCameraState(view);
