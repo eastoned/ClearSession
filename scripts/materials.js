@@ -180,6 +180,10 @@
         blending: THREE.NormalBlending
     });
 
+    distanceSignMaterial.polygonOffset = true;
+    distanceSignMaterial.polygonOffsetFactor = 1;
+    distanceSignMaterial.polygonOffsetUnits = 1;
+
     export const distanceWhiteMaterial = new THREE.ShaderMaterial({
     uniforms: {
         nearColor: { value: new THREE.Color(0xffffff) },
@@ -191,6 +195,9 @@
         depthTest: true,
         blending: THREE.NormalBlending
     });
+    distanceWhiteMaterial.polygonOffset = true;
+    distanceWhiteMaterial.polygonOffsetFactor = 3;
+    distanceWhiteMaterial.polygonOffsetUnits = 3;
 
     export const distanceGreyMaterial = new THREE.MeshStandardMaterial({
         color: 0x47617c

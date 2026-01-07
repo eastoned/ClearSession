@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import CameraControls from 'camera-controls';
 CameraControls.install( { THREE: THREE } );
 
-export const cameraMain = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 10000);
+export const cameraMain = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 2000);
 export const renderer = new THREE.WebGLRenderer();
     
 export const cameraControls = new CameraControls(cameraMain, renderer.domElement);
