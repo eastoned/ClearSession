@@ -188,7 +188,7 @@
     vertexShader: worldPositionVertexShader(),
     fragmentShader: distanceAlphaFragmentShader(),
         transparent: true,
-        depthTest: false,
+        depthTest: true,
         blending: THREE.NormalBlending
     });
 
