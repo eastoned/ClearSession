@@ -22,7 +22,6 @@
             yellow.color.set(0xffff00);
             dotMaterial.color.set(0xffff00);
             distanceSignMaterial.uniforms.nearColor.value = new THREE.Color(0x01735C);
-            groundMat.map = grass_tex;
         } else {
             roadMat.uniforms.u_customTexture.value = null;
             roadMat.uniforms.u_color.value = new THREE.Color(0x888888);
@@ -31,9 +30,7 @@
             yellow.color.set(0xffffff);
             dotMaterial.color.set(0xffffff);
             distanceSignMaterial.uniforms.nearColor.value = new THREE.Color(0x4aaa5c);
-            groundMat.map = null;
         }
-        groundMat.needsUpdate = true;
     }
 
     const grass_tex = new THREE.TextureLoader().load("assets/textures/grass.jpg");
@@ -54,7 +51,8 @@
         alphaTest: 0.3
     });
     
-    export const groundMat = new THREE.MeshStandardMaterial({
+    
+    export const groundTiledMat = new THREE.MeshStandardMaterial({
             map: grass_tex,
             hexTiling: {
                 patchScale: 3,
@@ -62,6 +60,10 @@
                 lookupSkipThreshold: 0.01,
                 textureSampleCoefficientExponent: 8,
             }
+    });
+
+    export const greyGround = new THREE.MeshBasicMaterial({
+        color: 0xeeeeee
     });
 
     const road_uniforms = {

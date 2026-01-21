@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { loadModel } from './loadModel.js';
-import {roadMat, dashedShapeMaterial, groundMat, dotMaterial, yellow, togglePalette } from './materials.js';
+import {roadMat, dashedShapeMaterial, dotMaterial, yellow, togglePalette, groundTiledMat, greyGround } from './materials.js';
 import {drawSign, drawQuad, drawRoad, drawSphere, drawTriangleSign, loadSign } from './shapes.js';
 import { renderer, cameraMain, cameraControls, toggleCameraControls, SetCameraState, CameraState, focusPosition, focusTarget} from './camera.js';
 import {MathUtils} from 'three';
@@ -38,7 +38,7 @@ function loadScene() {
     scene.add( light );
 
     const planeGeo = new THREE.PlaneGeometry();
-    const ground = new THREE.Mesh(planeGeo, groundMat);
+    const ground = new THREE.Mesh(planeGeo, groundTiledMat);
     ground.name = "ground";
     ground.scale.x = 5000;
     ground.scale.y = 5000;
@@ -185,9 +185,11 @@ function loadScene() {
         if(paletteChange){
             scene.background = new THREE.Color(color);
             hereText.color = 0xFFFF00;
+            ground.material = groundTiledMat;
         }else{
             scene.background = new THREE.Color(color);
-            hereText.color = 0xFFFFFF;
+            hereText.color = 0x4aaa5c;
+            ground.material = greyGround;
         }
         togglePalette(paletteChange);
     }

@@ -226,7 +226,7 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
             quad.position.z = 1.5;
 
             const cylGeo = new THREE.CylinderGeometry(1,1,20,6);
-            const cyl = new THREE.Mesh(cylGeo, yellow);
+            const cyl = new THREE.Mesh(cylGeo, yellowStay);
             cyl.position.y = -6;
             cyl.position.z = -1;
 
