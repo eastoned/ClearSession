@@ -20,7 +20,7 @@ export function toggleScenePerspective(zoomed, scene){
                         //3d model would have scene name
                         if(object.name == "Scene"){
                             object.rotation.x = 90 * Math.PI/180;
-                            object.rotation.y = 315 * Math.PI/180;
+                            object.rotation.y = -70 * Math.PI/180;
                             object.position.x -= 14;
                             object.scale.x = 5;
                             object.scale.y = 5;

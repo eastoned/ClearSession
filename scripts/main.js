@@ -7,7 +7,6 @@ import {MathUtils} from 'three';
 import { interactionManager, toggleScenePerspective, toggled } from './interaction.js';
 
 import {Text} from 'troika-three-text';
-import {preloadFont} from 'troika-three-text';
 import Papa from 'papaparse';
 import data from '/maps/data3.json' with { type: 'json' };
 
@@ -24,7 +23,7 @@ function loadScene() {
     const scene = new THREE.Scene();
     
 
-    const color = 0x8888ff;  // blue
+    const color = 0xa0bff0;  // blue
     const hereText = new Text();
     scene.background = new THREE.Color(color);
 
@@ -33,9 +32,9 @@ function loadScene() {
     directionalLight.target.position.x = 20;
     directionalLight.target.position.y = 20;
     directionalLight.target.position.z = -20;
-    scene.add(directionalLight);
-    scene.add(directionalLight.target);
-    const light = new THREE.AmbientLight( 0x00ffff ); // soft white light
+    //scene.add(directionalLight);
+    //scene.add(directionalLight.target);
+    const light = new THREE.AmbientLight(0xffffff); // soft white light
     scene.add( light );
 
     const planeGeo = new THREE.PlaneGeometry();
@@ -62,13 +61,13 @@ function loadScene() {
         expireTime = timeMul.attributes.content.date.quantity;
         
         switch(timeMul.attributes.content.date.timespan){
-            case "days":
+            case "day(s)":
                 expireTime *= 1;
             break;
-            case "months":
+            case "month(s)":
                 expireTime *= 30;
             break;
-            case "years":
+            case "year(s)":
                 expireTime *= 365;
             break;
         }
@@ -143,7 +142,7 @@ function loadScene() {
             if(key in modelPaths)
             {
                 //draws all models to scene
-                loadModel(modelPaths[key], nodePos[key].y + 34, nodePos[key].x, 8, 5, scene);
+                loadModel(modelPaths[key], nodePos[key].y + 35, nodePos[key].x - 3, 8.7, 5, scene);
                 
             }
 
@@ -187,7 +186,7 @@ function loadScene() {
             scene.background = new THREE.Color(color);
             hereText.color = 0xFFFF00;
         }else{
-            scene.background = new THREE.Color(0x888888);
+            scene.background = new THREE.Color(color);
             hereText.color = 0xFFFFFF;
         }
         togglePalette(paletteChange);

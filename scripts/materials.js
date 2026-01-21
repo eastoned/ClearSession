@@ -3,8 +3,12 @@
     export const vertexColorMat = new THREE.MeshBasicMaterial({vertexColors: true});
     export const brightMat = new THREE.MeshToonMaterial();
     export const dotMaterial = new THREE.MeshBasicMaterial({color:0xffff00, transparent: true, opacity: 0.3});
+    export const signMaterial = new THREE.MeshBasicMaterial({})
     export const yellow = new THREE.MeshBasicMaterial({color:0xffff00});
+    export const yellowStay = new THREE.MeshBasicMaterial({color:0xffff00});
     export let color = 0xffff00;
+    const nausea_tex = new THREE.TextureLoader().load("assets/textures/nausea.png");
+    const pain_tex = new THREE.TextureLoader().load("assets/textures/pain.png");
 
 
     export function togglePalette(paletteOn){
@@ -39,6 +43,16 @@
     grass_tex.wrapS = THREE.RepeatWrapping;
     grass_tex.wrapT = THREE.RepeatWrapping;
     grass_tex.repeat.set(800, 800);
+
+    export const signNausMat = new THREE.MeshBasicMaterial({
+        map: nausea_tex,
+        alphaTest: 0.3
+    });
+
+    export const signPainMat = new THREE.MeshBasicMaterial({
+        map: pain_tex,
+        alphaTest: 0.3
+    });
     
     export const groundMat = new THREE.MeshStandardMaterial({
             map: grass_tex,

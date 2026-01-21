@@ -5,7 +5,7 @@ import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline';
 import { cameraControls, focusPosition, focusTarget, moveCamera } from './camera.js';
 import { interactionManager, toggleScenePerspective, toggled } from './interaction.js';
-import { dotMaterial, yellow, crackMat, dashedShapeMaterial, distanceSignMaterial, distanceWhiteMaterial, distanceGreyMaterial,  } from './materials.js';
+import { dotMaterial, yellow, yellowStay, crackMat, dashedShapeMaterial, distanceSignMaterial, distanceWhiteMaterial, distanceGreyMaterial, signPainMat, signNausMat } from './materials.js';
 import {Text} from 'troika-three-text';
 import {preloadFont} from 'troika-three-text';
 
@@ -63,6 +63,7 @@ var uvGenerator =  {
 export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMat, dataID, obj){
 
         const shape = new THREE.Shape();
+        const conditionShape = new THREE.Shape();
 
         const extrudeSettings = {
             steps: 0,
@@ -89,6 +90,17 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
 
             //top left
             shape.lineTo(pos[end].y-12, pos[end].x + 12);
+
+            conditionShape.moveTo(pos[start].y-12, pos[start].x+24);
+
+            //bottom right
+            conditionShape.lineTo(pos[start].y+12, pos[start].x+24);
+
+            //top right
+            conditionShape.lineTo(pos[start].y+12, pos[start].x + 48);
+
+            //top left
+            conditionShape.lineTo(pos[start].y-12, pos[start].x + 48);
 
             const centerStripe = new THREE.Shape();
 
@@ -138,6 +150,17 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
             //top left
             shape.lineTo(pos[end].y + (vec.y*12), pos[end].x - (vec.x*12));
 
+            conditionShape.moveTo(pos[start].y + (vec.y*12) - vec.x*30, pos[start].x - (vec.x*12)- vec.y*30);
+
+            //bottom right
+            conditionShape.lineTo(pos[start].y - (vec.y*12) - vec.x*30, pos[start].x + (vec.x*12)- vec.y*30);
+
+            //top right
+            conditionShape.lineTo(pos[start].y - (vec.y*12) - vec.x*50, pos[start].x + (vec.x*12) - vec.y*50);
+
+            //top left
+            conditionShape.lineTo(pos[start].y + (vec.y*12) - vec.x*50, pos[start].x - (vec.x*12) - vec.y*50);
+
 
             const centerStripe = new THREE.Shape();
 
@@ -177,25 +200,43 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
         const lineGeo = new THREE.ShapeGeometry(shape, extrudeSettings);
         const lineMesh = new THREE.Mesh(lineGeo, roadMat);
         lineMesh.position.z = 0.5;
+
+        const conditionGeo = new THREE.ShapeGeometry(conditionShape, extrudeSettings);
         
-        const condMesh = new THREE.Mesh(lineGeo, crackMat);
+        const condMesh = new THREE.Mesh(conditionGeo, crackMat);
         condMesh.position.z = 0.6;
 
         scene.add(lineMesh);
-        if(Math.random() < 0.6){
+        if(Math.random() < 1){
+            
             scene.add(condMesh);
             let warnG = new THREE.Group();
             
-            drawTriangleSign(0, 0, 4.5, 8, 10, yellow, warnG, 1, 0, pos[end], scene, false);
-            const cylGeo = new THREE.CylinderGeometry(.3,.3,20,6);
+            drawTriangleSign(0, 0, 9, 16, 10, yellowStay, warnG, 1, 0, pos[end], scene, false);
+            
+            const quadGeo = new THREE.PlaneGeometry(6,6,1,1);
+            let quad = new THREE.Mesh(quadGeo, signNausMat);
+            
+            if(Math.random() < 0.5){
+                quad = new THREE.Mesh(quadGeo, signPainMat);
+            }
+            
+            
+            quad.position.y = 5;
+            quad.position.z = 1.5;
+
+            const cylGeo = new THREE.CylinderGeometry(1,1,20,6);
             const cyl = new THREE.Mesh(cylGeo, yellow);
             cyl.position.y = -6;
-            cyl.position.z = 1;
+            cyl.position.z = -1;
 
             cyl.layers.set(1);
-            warnG.position.x = (pos[start].y) - 16;
-            warnG.position.y = (pos[start].x);
+            
             warnG.add(cyl);
+            warnG.add(quad);
+            
+            warnG.position.x = pos[start].y + (vec.y*15) - vec.x*30 - 4;
+            warnG.position.y = pos[start].x - (vec.x*15)- vec.y*30;
             scene.add(warnG);
         }
             
@@ -337,7 +378,7 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
         const cylGeo = new THREE.CylinderGeometry(1,1,35,12);
         const cyl = new THREE.Mesh(cylGeo, distanceGreyMaterial);
         
-        cyl.position.x = 50;
+        cyl.position.x = 55;
         cyl.position.y = -26;
         cyl.position.z = -2;
         cyl.layers.set(1);
@@ -346,7 +387,7 @@ export function drawRoad(start, end, sourceCount, childCount, pos, scene, roadMa
         cyl2.layers.set(1);
         cyl2.scale.y = 1.5;
         cyl2.position.x = 33;
-        cyl2.position.y = -10;
+        cyl2.position.y = -9.5;
         cyl2.position.z = 0;
         cyl2.rotation.z = 90 * Math.PI/180;
         signGroup.add(cyl);

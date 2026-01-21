@@ -24,7 +24,7 @@
         "content": {
           "date": {
             "quantity": 2,
-            "timespan": "days",
+            "timespan": "day(s)",
             "timestamp": "2025-03-04T03:00:00.000Z"
           },
           "cycle": null,
@@ -45,7 +45,7 @@
         "content": {
           "date": {
             "quantity": 1,
-            "timespan": "months",
+            "timespan": "month(s)",
             "timestamp": "2025-09-02T03:00:00.000Z"
           },
           "cycle": null,
@@ -66,7 +66,7 @@
         "content": {
           "date": {
             "quantity": 1,
-            "timespan": "years",
+            "timespan": "year(s)",
             "timestamp": "2026-08-02T03:00:00.000Z"
           },
           "cycle": null,
@@ -87,7 +87,7 @@
         "content": {
           "date": {
             "quantity": 6,
-            "timespan": "months",
+            "timespan": "month(s)",
             "timestamp": "2026-02-02T03:00:00.000Z"
           },
           "cycle": null,
