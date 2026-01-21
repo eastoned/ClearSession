@@ -70,7 +70,7 @@ export function moveCamera(xPos = 0, yPos = 0, zPos = 0, offsetX = 0, offsetY = 
             cameraControls.setLookAt(focusPosition.x, focusPosition.y - 70, focusPosition.z + 50, focusTarget.x, focusTarget.y, focusTarget.z, true);
             break;
         case 'FIRSTPERSON':
-            cameraControls.setLookAt(focusPosition.x + 5, focusPosition.y - 35, focusPosition.z + 7, focusTarget.x + 5, focusTarget.y + 30, focusTarget.z + 5, true);
+            cameraControls.setLookAt(focusPosition.x + 5, focusPosition.y - 35, focusPosition.z + 8, focusTarget.x + 5, focusTarget.y + 30, focusTarget.z + 5, true);
             break;
     }
 }
